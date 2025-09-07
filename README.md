@@ -109,7 +109,7 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 ollama pull mistral // для чата
 ollama pull nomic-embed-text // для embeddings
 
-## устанровка elasticsearch
+## установка elasticsearch
 docker run -d --name es-vector -p 9200:9200 -e "discovery.type=single-node" -e "bootstrap.memory_lock=true" -e "ES_JAVA_OPTS=-Xms1g -Xmx1g" -e "xpack.security.enabled=false" -e "xpack.ml.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:8.12.1
 
 
