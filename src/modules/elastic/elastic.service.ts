@@ -28,60 +28,106 @@ export class ElasticService {
   }
 
     private async createChatIndex(index: string) {
-      const exists = await this.es.indices.exists({ index });
-      if (!exists) {
-        await this.es.indices.create({
-          index,
-          body: {
-            mappings: {
-              properties: {
-                userId: { type: 'keyword' },
-                question: { type: 'text' },
-                answer: { type: 'text' },
-                timestamp: { type: 'date' },
-                locale: { type: 'keyword' },
+      try {
+        const exists = await this.es.indices.exists({ index });
+        if (!exists) {
+          await this.es.indices.create({
+            index,
+            body: {
+              mappings: {
+                properties: {
+                  userId: { type: 'keyword' },
+                  question: { type: 'text' },
+                  answer: { type: 'text' },
+                  timestamp: { type: 'date' },
+                  locale: { type: 'keyword' },
+                },
               },
             },
-          },
-        });
+          });
+        }
+        
+      } catch (error) {
+        console.error('[ERROR] createChatIndex error', error);
+        throw error
       }
     }
 
     private async createIndex(index: string) {
-    const exists = await this.es.indices.exists({ index });
-    if (!exists) {
-      await this.es.indices.create({
-        index,
-        body: {
-          mappings: {
-            properties: {
-              userId: { type: 'keyword' },
-              question: { type: 'text' },
-              answer: { type: 'text' },
-              embedding: { type: 'dense_vector', dims: 768 },
-              timestamp: { type: 'date' },
-              locale: { type: 'keyword' },
+      try {
+        const exists = await this.es.indices.exists({ index });
+        if (!exists) {
+          await this.es.indices.create({
+            index,
+            body: {
+              mappings: {
+                properties: {
+                  userId: { type: 'keyword' },
+                  question: { type: 'text' },
+                  answer: { type: 'text' },
+                  embedding: { type: 'dense_vector', dims: 768 },
+                  timestamp: { type: 'date' },
+                  locale: { type: 'keyword' },
+                },
+              },
             },
-          },
-        },
-      });
-    }
+          });
+        }
+        
+      } catch (error) {
+        console.error('[ERROR] createIndex error', error);
+        throw error
+      }
   }
 
 async saveChat(userId: string, question: string, answer: string, locale: string) {
-  await this.es.index({
-    index: indexChatHistory,
-    document: {
-      userId,
-      question,
-      answer,
-      locale,
-      timestamp: new Date(),
-    },
-  });
+  try {
+    await this.es.index({
+      index: indexChatHistory,
+      document: {
+        userId,
+        question,
+        answer,
+        locale,
+        timestamp: new Date(),
+      },
+    });
+    
+  } catch (error) {
+      console.error('[ERROR] saveChat error', error);
+      throw error
+  }
  }
 
+
+async searchByUserId(userId: string){
+  try {
+      const existing = await this.es.search({
+      index: indexName,
+      size: 1,
+      query: {
+        term: { userId }
+      },
+      _source: ['embedding', 'text'], // достаём только нужное
+    });
+
+    let embedding;
+
+    if (existing.hits.hits.length > 0) {
+      embedding = existing.hits.hits[0]._source.embedding;
+      console.log('embedding from ES', embedding.length);
+
+      return embedding
+    }
+  } catch (error) {
+        console.error('[ERROR] searchByUserId error', error);
+        throw error
+  }
+} 
+
+
 async embedSearch(embedding: any){
+    try {
       const result = await this.es.search({
       index: indexName,
       size: 1,
@@ -98,25 +144,36 @@ async embedSearch(embedding: any){
 
     const hit = result.hits.hits[0];
     return hit?._source?.text || '';
+      
+    } catch (error) {
+          console.error('[ERROR] embedSearch error', error);
+          throw error
+    }
 
  }
 
 async getChatContext(userId: string, limit = 5) {
-  const res = await this.es.search({
-    index: indexChatHistory,
-    size: limit,
-    query: {
-      term: { userId }
-    },
-    sort: [{ timestamp: { order: 'desc' } }]
-  });
-
-  // Формируем текст контекста: "Вопрос -> Ответ"
-  const hits = res.hits.hits;
-  return hits
-    .map(h => `${h._source.question} -> ${h._source.answer}`)
-    .reverse() // чтобы сначала были старые сообщения
-    .join('\n');
+  try {
+    const res = await this.es.search({
+      index: indexChatHistory,
+      size: limit,
+      query: {
+        term: { userId }
+      },
+      sort: [{ timestamp: { order: 'desc' } }]
+    });
+  
+    // Формируем текст контекста: "Вопрос -> Ответ"
+    const hits = res.hits.hits;
+    return hits
+      .map(h => `${h._source.question} -> ${h._source.answer}`)
+      .reverse() // чтобы сначала были старые сообщения
+      .join('\n');
+    
+  } catch (error) {
+      console.error('[ERROR] getChatContext error', error);
+      throw error
+  }
 }
 
 

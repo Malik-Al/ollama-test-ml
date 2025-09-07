@@ -43,7 +43,11 @@ export class ChatService {
           Короткий номер: 9595
           WhatsApp: 0990 90 59 59
           Адрес: г. Бишкек, ул. Киевская 104а
+          О банке: Оптима Банк — стремится быть современными, отслеживать нововведения банковской отрасли, и улучшать качество сервиса для клиентов. "Оптима Банк" – это устойчивый и стабильный финансовый институт, банк с хорошей структурой баланса, диверсифицированным кредитным и депозитным портфелем, и сбалансированным географическим покрытием по всему Кыргызстану.
   
+          Актуально:
+          - Рассрочка без переплат PAY, DA! 
+
           Продукты:
           - Платежные карты: Visa, Элкарт
           - Депозиты
@@ -90,13 +94,24 @@ export class ChatService {
 
   }
 
-  async searchProfile(question: string) {
+  async searchProfile(question: string, userId: string) {
     try {
-  
-      const res: any = await this.embedding.embed(question)
-      console.log('res', res);
 
-      const embedding = res.embeddings[0];
+      let embedding
+  
+      const userFomElEmbeddings = await this.elasticService.searchByUserId(userId);
+
+      
+      if(userFomElEmbeddings) {
+        console.log('ELS');
+        embedding = userFomElEmbeddings
+      } else {
+        console.log('embedding');
+
+        const res: any = await this.embedding.embed(question)
+        embedding = res.embeddings[0];
+      }
+
   
       console.log('embedding', embedding);
   
@@ -111,10 +126,10 @@ export class ChatService {
 
   async ask(userId: string, question: string, locale = 'ru') {
     try {
-      const profileText = await this.searchProfile(question);
+      const profileText = await this.searchProfile(question, userId);
       const chatContext = await this.elasticService.getChatContext(userId) 
   
-      console.log('chatContext', chatContext);
+      console.log('profileText', profileText);
   
       const prompt = `
           Вот данные: 
