@@ -3,8 +3,10 @@ import { Client as ESClient } from '@elastic/elasticsearch';
 import ollama from 'ollama';
 
 const embeddingsModel = 'nomic-embed-text';
-const chatModel = 'deepseek-r1';
+const chatModel = 'mistral';
 const indexName = 'bank_profileser';
+const indexChatHistory = 'chat_history';
+
 
 @Injectable()
 export class ChatService {
@@ -13,7 +15,28 @@ export class ChatService {
   constructor() {
     this.es = new ESClient({ node: 'http://localhost:9200' });
     this.createIndex(indexName);
+    this.createChatIndex(indexChatHistory);
   }
+
+  private async createChatIndex(index: string) {
+  const exists = await this.es.indices.exists({ index });
+  if (!exists) {
+    await this.es.indices.create({
+      index,
+      body: {
+        mappings: {
+          properties: {
+            userId: { type: 'keyword' },
+            question: { type: 'text' },
+            answer: { type: 'text' },
+            timestamp: { type: 'date' },
+            locale: { type: 'keyword' },
+          },
+        },
+      },
+    });
+  }
+}
 
   private async createIndex(index: string) {
     const exists = await this.es.indices.exists({ index });
@@ -35,6 +58,20 @@ export class ChatService {
       });
     }
   }
+
+
+  async saveChat(userId: string, question: string, answer: string, locale: string) {
+  await this.es.index({
+    index: indexChatHistory,
+    document: {
+      userId,
+      question,
+      answer,
+      locale,
+      timestamp: new Date(),
+    },
+  });
+}
 
   async saveProfile(profile) {
     const text = `
@@ -123,16 +160,20 @@ export class ChatService {
 
   }
 
-  async ask(question: string) {
+  async ask(userId: string, question: string, locale = 'ru') {
     const profileText = await this.searchProfile(question);
+    const chatContext = await this.getChatContext(userId);
 
     const prompt = `
-      Вот данные: 
-      ${profileText}
+        Вот данные: 
+        ${profileText}
 
-      Вопрос: ${question}
-      Ответь строго по данным, коротко и дружелюбно. 
-      Если нет ответа — скажи "нет информации".
+        Контекст предыдущих сообщений пользователя:
+        ${chatContext}
+
+        Вопрос: ${question}
+        Ответь строго по данным, коротко и дружелюбно. 
+        Если нет ответа — скажи "нет информации".
     `;
 
     const response: any = await ollama.chat({
@@ -140,13 +181,35 @@ export class ChatService {
       messages: [
         {
           role: 'system',
-          content: `Ты ассистент, отвечающий только на основе предоставленных данных. 
+          content: `Ты ассистент, отвечающий только на основе предоставленных данных и истории чата пользователя. 
           Если ответа нет в данных — говори "нет информации".`,
         },
         { role: 'user', content: prompt },
         ],
     });
 
-    return response.message.content;
+    const answer = response.message.content;
+
+    await this.saveChat(userId, question, answer, locale);
+
+    return answer
   }
+
+  async getChatContext(userId: string, limit = 5) {
+  const res = await this.es.search({
+    index: indexChatHistory,
+    size: limit,
+    query: {
+      term: { userId }
+    },
+    sort: [{ timestamp: { order: 'desc' } }]
+  });
+
+  // Формируем текст контекста: "Вопрос -> Ответ"
+  const hits = res.hits.hits;
+  return hits
+    .map(h => `${h._source.question} -> ${h._source.answer}`)
+    .reverse() // чтобы сначала были старые сообщения
+    .join('\n');
+}
 }

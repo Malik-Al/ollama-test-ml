@@ -23,8 +23,9 @@ export class ChatController {
   constructor(private readonly ragService: ChatService) {}
 
   @Post('ask')
-  async ask(@Body('question') question: string) {
-    const answer = await this.ragService.ask(question);
+  async ask(@Body() dto: any) {
+    const {question, userId, locale} = dto
+    const answer = await this.ragService.ask(userId, question, locale);
     return { answer };
   }
 
