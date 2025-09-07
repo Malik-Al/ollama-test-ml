@@ -115,7 +115,7 @@ async searchByUserId(userId: string){
 
     if (existing.hits.hits.length > 0) {
       embedding = existing.hits.hits[0]._source.embedding;
-      console.log('embedding from ES', embedding.length);
+      console.log('embedding from ES', embedding);
 
       return embedding
     }

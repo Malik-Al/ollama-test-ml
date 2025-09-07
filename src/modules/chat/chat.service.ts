@@ -101,7 +101,6 @@ export class ChatService {
   
       const userFomElEmbeddings = await this.elasticService.searchByUserId(userId);
 
-      
       if(userFomElEmbeddings) {
         console.log('ELS');
         embedding = userFomElEmbeddings
