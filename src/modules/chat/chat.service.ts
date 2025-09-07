@@ -164,16 +164,19 @@ export class ChatService {
     const profileText = await this.searchProfile(question);
     const chatContext = await this.getChatContext(userId);
 
+    console.log('chatContext', chatContext);
+    
+
     const prompt = `
         Вот данные: 
         ${profileText}
 
-        Контекст предыдущих сообщений пользователя:
-        ${chatContext}
+        Контекст предыдущих сообщений пользователя: 
+        ${chatContext} 
 
         Вопрос: ${question}
         Ответь строго по данным, коротко и дружелюбно. 
-        Если нет ответа — скажи "нет информации".
+        Если ответа нет в данных, ответь ровно: "нет информации"!.
     `;
 
     const response: any = await ollama.chat({
@@ -181,8 +184,9 @@ export class ChatService {
       messages: [
         {
           role: 'system',
-          content: `Ты ассистент, отвечающий только на основе предоставленных данных и истории чата пользователя. 
-          Если ответа нет в данных — говори "нет информации".`,
+          content: `Ты ассистент, отвечающий ТОЛЬКО на основе предоставленных данных и истории чата пользователя. 
+          Если ответа нет в данных, ответь ровно: "нет информации"!.
+          Никаких догадок, генераций или знаний вне предоставленных данных`,
         },
         { role: 'user', content: prompt },
         ],
