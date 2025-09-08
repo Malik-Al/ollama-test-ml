@@ -1,60 +1,171 @@
-// import { Injectable, Logger } from '@nestjs/common';
-// import { Client } from '@elastic/elasticsearch';
+import { Injectable, Logger } from '@nestjs/common';
+import { Client } from '@elastic/elasticsearch';
+const indexName = 'bank_profileser';
+const indexChatHistory = 'chat_history';
 
-// @Injectable()
-// export class ElasticService {
-//   private readonly logger = new Logger(ElasticService.name);
-//   private client: any;
 
-//   constructor() {
-//     this.client = new Client({ node: 'http://localhost:9200' });
-//   }
+@Injectable()
+export class ElasticService {
+  private es: any;
 
-//   async createIndex(companyId: string) {
-//     const indexName = `company_${companyId}_chat`;
-//     const exists = await this.client.indices.exists({ index: indexName });
-//     if (!exists) {
-//       await this.client.indices.create({
-//         index: indexName,
-//         body: {
-//           mappings: {
-//             properties: {
-//               userId: { type: 'keyword' },
-//               question: { type: 'text' },
-//               answer: { type: 'text' },
-//               embedding: { type: 'dense_vector', dims: 768 },
-//               timestamp: { type: 'date' },
-//               locale: { type: 'keyword' }
-//             }
-//           }
-//         }
-//       });
-//       this.logger.log(`Created index ${indexName}`);
-//     }
-//     return indexName;
-//   }
+  constructor() {
+    this.es = new Client({ node: 'http://localhost:9200' });
+    this.createIndex(indexName);
+    this.createChatIndex(indexChatHistory);
+    console.log('Instaling Els');
+    
+  }
 
-//   async addMessage(index: string, data: any) {
-//     await this.client.index({
-//       index,
-//       body: data,
-//     });
-//   }
+    private async createChatIndex(index: string) {
+        try {
+            const exists = await this.es.indices.exists({ index });
+            if (!exists) {
+            await this.es.indices.create({
+                index,
+                body: {
+                mappings: {
+                    properties: {
+                    userId: { type: 'keyword' },
+                    question: { type: 'text' },
+                    answer: { type: 'text' },
+                    timestamp: { type: 'date' },
+                    locale: { type: 'keyword' },
+                    },
+                },
+                },
+            });
+            }
+            
+        } catch (error) {
+            console.error('[Error: createChatIndex]', error);
+            throw error
+        }
+    }
 
-//   async searchSimilar(index: string, vector: number[], size = 10) {
-//     const { body } = await this.client.search({
-//       index,
-//       size,
-//       query: {
-//         script_score: {
-//           query: { match_all: {} },
-//           script: {
-//             source: "cosineSimilarity(params.vector, 'embedding') + 1.0",
-//             params: { vector },
-//           }
-//         }
-//       }
-//     });
-//     return body.hits.hits.map(hit => hit._source);
-//   }
-// }
+    private async createIndex(index: string) {
+        try {
+            const exists = await this.es.indices.exists({ index });
+            if (!exists) {
+            await this.es.indices.create({
+                index,
+                body: {
+                mappings: {
+                    properties: {
+                    userId: { type: 'keyword' },
+                    question: { type: 'text' },
+                    answer: { type: 'text' },
+                    embedding: { type: 'dense_vector', dims: 768 },
+                    timestamp: { type: 'date' },
+                    locale: { type: 'keyword' },
+                    },
+                },
+                },
+            });
+            }
+            
+        } catch (error) {
+            console.error('[Error: createIndex]', error);
+            throw error
+        }
+    }
+
+
+    async saveChat(
+        userId: string, 
+        question: string, 
+        answer: string, 
+        locale: string
+    ) {
+        try {
+            await this.es.index({
+                index: indexChatHistory,
+                document: {
+                userId,
+                question,
+                answer,
+                locale,
+                timestamp: new Date(),
+                },
+            });
+            
+        } catch (error) {
+            console.error('[Error: saveChat]', error);
+            throw error
+        }
+    }
+
+
+    async getChatContext(
+        userId: string, 
+        limit = 5
+    ) {
+        try {
+            const res = await this.es.search({
+                index: indexChatHistory,
+                size: limit,
+                query: {
+                term: { userId }
+                },
+                sort: [{ timestamp: { order: 'desc' } }]
+            });
+    
+            // Формируем текст контекста: "Вопрос -> Ответ"
+            const hits = res.hits.hits;
+            return hits
+                .map(h => `${h._source.question} -> ${h._source.answer}`)
+                .reverse() // чтобы сначала были старые сообщения
+                .join('\n');
+            
+        } catch (error) {
+            console.error('[Error: getChatContext]', error);
+            throw error
+        }
+    }
+
+    async addedDataDocument(
+        profile: { userId: string, locale: string }, 
+        text: string, 
+        embedding: any
+    ) {
+        try {
+            await this.es.index({
+            index: indexName,
+            document: {
+                userId: profile.userId || 'default',
+                text,
+                embedding,
+                locale: profile.locale || 'ru',
+                timestamp: new Date(),
+            },
+            });
+        } catch (error) {
+            console.error('[Error: addedData]', error);
+            throw error
+        }
+    }
+
+    async search(embedding: any){
+        try {
+            const result = await this.es.search({
+            index: indexName,
+            size: 1,
+            query: {
+                script_score: {
+                query: { match_all: {} },
+                script: {
+                    source: "cosineSimilarity(params.query_vector, 'embedding') + 1.0",
+                    params: { query_vector: embedding },
+                },
+                },
+            },
+            });
+
+            const hit = result.hits.hits[0];
+            return hit?._source?.text || '';
+
+        } catch (error) {
+            console.error('[Error: search]', error);
+            throw error
+        }
+    }
+}
