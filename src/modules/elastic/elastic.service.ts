@@ -9,10 +9,10 @@ export class ElasticService {
   private es: any;
 
   constructor() {
-    this.es = new Client({ node: 'http://localhost:9200' });
-    this.createIndex(indexName);
-    this.createChatIndex(indexChatHistory);
-    console.log('Instaling Els');
+    // this.es = new Client({ node: 'http://localhost:9200' });
+    // this.createIndex(indexName);
+    // this.createChatIndex(indexChatHistory);
+    // console.log('Instaling Els');
     
   }
 
