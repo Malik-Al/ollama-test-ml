@@ -9,10 +9,10 @@ export class ElasticService {
   private es: any;
 
   constructor() {
-    // this.es = new Client({ node: 'http://localhost:9200' });
+    this.es = new Client({ node: 'http://localhost:9200' });
     // this.createIndex(indexName);
-    // this.createChatIndex(indexChatHistory);
-    // console.log('Instaling Els');
+    this.createChatIndex(indexChatHistory);
+    console.log('Instaling Els');
     
   }
 
@@ -20,16 +20,22 @@ export class ElasticService {
         try {
             const exists = await this.es.indices.exists({ index });
             if (!exists) {
+            console.log(`[Create:index] name: ${indexChatHistory}`);
+            
             await this.es.indices.create({
                 index,
                 body: {
                 mappings: {
                     properties: {
-                    userId: { type: 'keyword' },
-                    question: { type: 'text' },
-                    answer: { type: 'text' },
-                    timestamp: { type: 'date' },
-                    locale: { type: 'keyword' },
+                        bank_id: { type: 'keyword' },
+                        messages: { 
+                            type: 'nested',
+                            properties: {
+                                role: { type: 'keyword' },
+                                content: { type: 'text' },
+                            },
+                        },
+                        timestamp: { type: 'date' },
                     },
                 },
                 },
@@ -42,6 +48,26 @@ export class ElasticService {
         }
     }
 
+    async findByBankId(bankId: string) {
+        try {
+            const response = await this.es.search({
+            index: indexChatHistory,
+            size: 100, 
+            query: {
+                term: {
+                bank_id: bankId,
+                },
+            },
+            });
+            return response.hits.hits.map(hit => hit);
+        } catch (error) {
+            console.error('[Error: findByBankId]', error);
+            throw error;
+        }
+     }
+
+
+
     private async createIndex(index: string) {
         try {
             const exists = await this.es.indices.exists({ index });
@@ -51,7 +77,7 @@ export class ElasticService {
                 body: {
                 mappings: {
                     properties: {
-                    userId: { type: 'keyword' },
+                    bank_id: { type: 'keyword' },
                     question: { type: 'text' },
                     answer: { type: 'text' },
                     embedding: { type: 'dense_vector', dims: 768 },
@@ -69,22 +95,37 @@ export class ElasticService {
         }
     }
 
+    async addMessages(
+        id: string, 
+        newMessages: object[]
+    ) {
+        try {
+            await this.es.update({
+                index: indexChatHistory,
+                id,
+                body: {
+                    doc: {
+                        messages: newMessages
+                    }
+                },
+            });
+        } catch (error) {
+            console.error('[Error: addMessages]', error);
+            throw error;
+        }
+        }
 
     async saveChat(
-        userId: string, 
-        question: string, 
-        answer: string, 
-        locale: string
+        bank_id: string, 
+        messages: object[]
     ) {
         try {
             await this.es.index({
                 index: indexChatHistory,
-                document: {
-                userId,
-                question,
-                answer,
-                locale,
-                timestamp: new Date(),
+                    document: {
+                        bank_id: bank_id,
+                        messages,
+                        timestamp: Date.now(),
                 },
             });
             
@@ -96,7 +137,7 @@ export class ElasticService {
 
 
     async getChatContext(
-        userId: string, 
+        bank_id: string, 
         limit = 5
     ) {
         try {
@@ -104,17 +145,12 @@ export class ElasticService {
                 index: indexChatHistory,
                 size: limit,
                 query: {
-                term: { userId }
+                term: { bank_id }
                 },
                 sort: [{ timestamp: { order: 'desc' } }]
             });
     
-            // Формируем текст контекста: "Вопрос -> Ответ"
-            const hits = res.hits.hits;
-            return hits
-                .map(h => `${h._source.question} -> ${h._source.answer}`)
-                .reverse() // чтобы сначала были старые сообщения
-                .join('\n');
+            return res.hits.hits;
             
         } catch (error) {
             console.error('[Error: getChatContext]', error);
@@ -123,7 +159,7 @@ export class ElasticService {
     }
 
     async addedDataDocument(
-        profile: { userId: string, locale: string }, 
+        profile: { bank_id: string, locale: string }, 
         text: string, 
         embedding: any
     ) {
@@ -131,7 +167,7 @@ export class ElasticService {
             await this.es.index({
             index: indexName,
             document: {
-                userId: profile.userId || 'default',
+                bank_id: profile.bank_id || 'default',
                 text,
                 embedding,
                 locale: profile.locale || 'ru',

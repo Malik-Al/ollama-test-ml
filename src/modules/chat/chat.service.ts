@@ -1,60 +1,82 @@
 import { Injectable } from '@nestjs/common';
 import { ElasticService } from '../elastic/elastic.service';
 import ollama from 'ollama';
-import fs from 'fs';
-import { contentPrompt } from './setting,prompt';
+import { settingPrompt, dataForQuestion } from './setting,prompt';
+import { ChatDto } from './dto';
 const chatModelMistral = 'mistral';
 const chatModelDeepseek = 'deepseek-r1';
-
-
-const data = JSON.parse(fs.readFileSync('banks.json', 'utf-8'));
-const bank = data.find(b => b.name === 'Оптима банк');
-
-console.log('data', data);
-console.log('bank', bank);
 
 
 
 @Injectable()
 export class ChatService {
+  chatMsg: any[] = [];
   constructor(
     private readonly elastic: ElasticService
   ) {}
 
 
   async ask(
-    question: string, 
+    dto: ChatDto, 
   ) {
-    console.log('question', question);
+    try {
+      const {
+        bank_id, 
+        question
+      } = dto;
 
-    // const msg = 'Вопрос: есть бесплатная карта ? Ответ: Да, в списке продуктов банка упоминается Optima GOLD - бесплатная карта.'
-    
-    const prompt = `
-      Вот данные:
-      ${JSON.stringify(bank, null, 2)}
 
-      Вопрос: ${question}
-    `;
+      const prompt = `
+        Вот данные:
+        ${dataForQuestion}
 
-    const response: any = await ollama.chat({
-      // model: chatModelDeepseek, // Deepseek
-      model: chatModelMistral, // mistral
-      messages: [
-        {
-          role: 'system',
-          content: contentPrompt,
-        },
-        { role: 'user', content: prompt },
-        ],
-    });
+        Ты ассистент в банке:
+        ${settingPrompt}
+      `;
+      
+      const bankId = await this.elastic.getChatContext(bank_id);
+      
+      console.log('bankId', bankId[0]);
 
-    console.log('response', response);
+      const msg = [
+          { role: 'system', content: prompt}
+      ]
 
-    // let cleanContent = response?.message?.content || ''
-    // cleanContent = cleanContent.replace(/<think>[\s\S]*?<\/think>/g, '').trim()
-    // console.log('cleanContent', cleanContent)
-    // return cleanContent
+      if(bankId[0]){
+          msg.push(...bankId[0]._source.messages)
+          msg.push({ role: 'user', content: question })
+      } else {
+        msg.push({ role: 'user', content: question })
+      }
 
-    return response.message.content // mistral response
+      console.log('msg', msg);
+
+  
+      const response: any = await ollama.chat({
+        model: chatModelMistral, 
+        messages: msg
+      });
+
+      
+      if(!bankId[0]){
+        console.log('new user added data for');
+        await this.elastic.saveChat(
+          bank_id,
+          [
+            { role: 'assistant', content: response.message.content }
+          ]
+        );
+      }
+
+      if(bankId[0]) {
+        console.log('existing user added data');
+        await this.elastic.addMessages(bankId[0]._id, response.message)
+      }
+
+      return response.message.content
+      
+    } catch (error) {
+        throw error
+    }
   }
 }
