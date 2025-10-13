@@ -25,28 +25,18 @@ export class ChatService {
         question
       } = dto;
 
-
-      const prompt = `
-        Вот данные:
-        ${dataForQuestion}
-
-        Ты ассистент в банке:
-        ${settingPrompt}
-      `;
       
       const bankId = await this.elastic.getChatContext(bank_id);
       
-      console.log('bankId', bankId[0]);
-
       const msg = [
-          { role: 'system', content: prompt}
+          { role: 'system', content: `Ты ассистент в банке: ${settingPrompt}`}
       ]
 
       if(bankId[0]){
           msg.push(...bankId[0]._source.messages)
-          msg.push({ role: 'user', content: question })
+          msg.push({ role: 'user', content: `Вот данные: ${dataForQuestion}, Вопрос: ${question}` })
       } else {
-        msg.push({ role: 'user', content: question })
+        msg.push({ role: 'user', content: `Вот данные: ${dataForQuestion}, Вопрос: ${question}`  })
       }
 
       console.log('msg', msg);
@@ -63,6 +53,7 @@ export class ChatService {
         await this.elastic.saveChat(
           bank_id,
           [
+            { role: 'user', content: question },
             { role: 'assistant', content: response.message.content }
           ]
         );
@@ -70,6 +61,7 @@ export class ChatService {
 
       if(bankId[0]) {
         console.log('existing user added data');
+        await this.elastic.addMessages(bankId[0]._id, [{ role: 'user', content: question }])
         await this.elastic.addMessages(bankId[0]._id, response.message)
       }
 

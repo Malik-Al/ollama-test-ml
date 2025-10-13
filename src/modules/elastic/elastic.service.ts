@@ -97,16 +97,26 @@ export class ElasticService {
 
     async addMessages(
         id: string, 
-        newMessages: object[]
+        newMessage: object
     ) {
         try {
             await this.es.update({
                 index: indexChatHistory,
                 id,
-                body: {
-                    doc: {
-                        messages: newMessages
-                    }
+                script: {
+                    source: `
+                        if (ctx._source.messages == null) {
+                            ctx._source.messages = [params.newMessage];
+                        } else if (ctx._source.messages instanceof List) {
+                            ctx._source.messages.add(params.newMessage);
+                        } else {
+                            def old = ctx._source.messages;
+                            ctx._source.messages = [old, params.newMessage];
+                        }
+                    `,
+                    params: {
+                        newMessage,
+                    },
                 },
             });
         } catch (error) {
