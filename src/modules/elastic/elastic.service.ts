@@ -16,6 +16,43 @@ export class ElasticService {
     
   }
 
+    async trimMessages(bankId: string){
+        try {
+            const result = await this.es.search({
+                index: indexChatHistory,
+                query: {
+                    term: { bank_id: bankId }  
+                }
+            });
+
+            const bankDoc = result.hits.hits[0];
+
+            console.log('[Upd:Msg] by bankId:', bankId);
+
+            const documentId = bankDoc._id;
+
+            await this.es.update({
+                index: indexChatHistory,
+                id: documentId,
+                body: {
+                    script: {
+                    source: `
+                        if (ctx._source.messages != null && ctx._source.messages.length > params.pairs * 2) {
+                            int start = ctx._source.messages.length - params.pairs * 2;
+                            ctx._source.messages = ctx._source.messages.subList(start, ctx._source.messages.length);
+                        }
+                    `,
+                        params: {
+                            pairs: 5
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            throw error
+        }
+    }
+
     private async createChatIndex(index: string) {
         try {
             const exists = await this.es.indices.exists({ index });

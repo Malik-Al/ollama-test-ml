@@ -63,6 +63,7 @@ export class ChatService {
         console.log('existing user added data');
         await this.elastic.addMessages(bankId[0]._id, { role: 'user', content: question })
         await this.elastic.addMessages(bankId[0]._id, response.message)
+        await this.elastic.trimMessages(bankId[0]._source.bank_id);
       }
 
       return response.message.content
