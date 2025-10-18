@@ -1,7 +1,5 @@
 import { Controller, Post, Body, HttpException, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { FileType } from './type';
 import { memoryStorage } from 'multer';
 

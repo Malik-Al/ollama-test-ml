@@ -1,0 +1,12 @@
+{
+    "elastic": {
+        "api": {
+            "host": "http://localhost",
+            "port": 9200
+        },
+        "indexs": {
+            "chat": "chat_history",
+            "embedding": "bank_embeddings"
+        }
+    }
+}
