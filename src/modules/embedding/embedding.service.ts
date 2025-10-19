@@ -3,18 +3,14 @@ import ollama from 'ollama';
 
 @Injectable()
 export class EmbeddingService {
-  private model = 'nomic-embed-text'; // или любая embedding-модель, доступная в Ollama
+  private model = 'nomic-embed-text'; 
 
-  async embedTexts(texts: string[]) {
-    const results: number[][] = [];
-    for (const text of texts) {
+  async embedTexts(text: string): Promise<number[]> {
       const res = await ollama.embed({
         model: this.model,
         input: text,
       });
-      results.push(res.embeddings[0]);
-    }
-    return results;
+    return res.embeddings[0];
   }
 
   async embedQuestion(question: string) {
