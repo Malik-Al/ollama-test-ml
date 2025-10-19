@@ -129,6 +129,10 @@ export class ElasticService {
         text: string, 
         embedding: number[]
     ) {
+        console.log(`[START] ElasticService method saveEmbedding 
+            companyId: ${companyId} 
+            text: ${JSON.stringify(text)}
+            embedding: ${embedding.length && ' -0.062158696 ....'}`);
         try {
             await this.es.index({
             index: indexEmbedd,
@@ -153,14 +157,15 @@ export class ElasticService {
         try {
             const result = await this.es.search({
                 index: indexEmbedd,
+                min_score: 0.80,
                 knn: {
-                field: 'embedding',
-                query_vector: queryEmbedding,
-                k: 3,
-                num_candidates: 20,
-                filter: {
-                    term: { company_id: companyId },
-                },
+                    field: 'embedding',
+                    query_vector: queryEmbedding,
+                    k: 2,
+                    num_candidates: 20,
+                // filter: {
+                //     term: { company_id: companyId },
+                // },
             },
         });
 
