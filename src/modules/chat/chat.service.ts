@@ -35,7 +35,7 @@ export class ChatService {
   }
 
     
-    async ask(dto: ChatDto): Promise<string> {
+    async ask(dto: ChatDto): Promise<any>  {
       console.log(`[START] ChatService method ask dto: ${JSON.stringify(dto)}`);
       try {
         const {
@@ -72,6 +72,7 @@ export class ChatService {
           });
 
           const message = await this.streamResponse(response)
+
           
           
           console.log('msg', message);
@@ -94,7 +95,8 @@ export class ChatService {
           await this.elastic.trimMessages(bankId[0]._source.bank_id);
         }
 
-        return message
+        return message.trim()
+
         
       } catch (error) {
         console.error(`[EEROR] ChatService method ask error: `, error);
