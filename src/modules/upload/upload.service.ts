@@ -18,24 +18,46 @@ export class UploadService {
     overlap = 50
   ): string[] {
     try {
-      const paragraphs = text.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
+      // const paragraphs = text.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
+
+      // const chunks: string[] = [];
+      // let currentChunk = '';
+
+      // for (const paragraph of paragraphs) {
+      //   const sentences = paragraph.match(/[^.!?]+[.!?]?/g) || [paragraph];
+
+      //   for (const sentence of sentences) {
+      //     if ((currentChunk + ' ' + sentence).length > chunkSize) {
+      //       if (currentChunk) chunks.push(currentChunk.trim());
+      //       currentChunk = sentence.slice(-overlap);
+      //     } else {
+      //       currentChunk += (currentChunk ? ' ' : '') + sentence;
+      //     }
+      //   }
+      // }
+      // if (currentChunk) chunks.push(currentChunk.trim());
+      // return chunks;
+
+      const sentences = text.match(/[^.!?]+[.!?]?/g) || [text];
 
       const chunks: string[] = [];
       let currentChunk = '';
 
-      for (const paragraph of paragraphs) {
-        const sentences = paragraph.match(/[^.!?]+[.!?]?/g) || [paragraph];
+      for (const sentence of sentences) {
+        if ((currentChunk + ' ' + sentence).trim().length > chunkSize) {
+          chunks.push(currentChunk.trim());
 
-        for (const sentence of sentences) {
-          if ((currentChunk + ' ' + sentence).length > chunkSize) {
-            if (currentChunk) chunks.push(currentChunk.trim());
-            currentChunk = sentence.slice(-overlap);
-          } else {
-            currentChunk += (currentChunk ? ' ' : '') + sentence;
-          }
+          const overlapText = currentChunk.slice(-overlap);
+          currentChunk = overlapText + ' ' + sentence;
+        } else {
+          currentChunk += (currentChunk ? ' ' : '') + sentence;
         }
       }
-      if (currentChunk) chunks.push(currentChunk.trim());
+
+      if (currentChunk.trim().length > 0) {
+        chunks.push(currentChunk.trim());
+      }
+
       return chunks;
       
     } catch (error) {
@@ -48,6 +70,8 @@ export class UploadService {
     file: FileType
   ){
     try {
+      console.log(`[START] UploadService method added file`, file.fieldname);
+
       const parser = new PDFParse({ data: file.buffer });
       const pdfData = await parser.getText().then((result) => result.text);
 

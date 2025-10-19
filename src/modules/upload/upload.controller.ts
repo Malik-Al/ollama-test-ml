@@ -17,6 +17,7 @@ export class UploadController {
   async uploadFile(
     @UploadedFile() file: FileType
   ){
+    console.log(`[START] UploadController method uploadFile`, file.fieldname);
     try {
       await this.upload.added(file);
 
