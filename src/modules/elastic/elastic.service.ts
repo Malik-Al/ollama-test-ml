@@ -124,4 +124,49 @@ export class ElasticService {
         }
     }
 
+    async saveEmbedding(
+        companyId: string, 
+        text: string, 
+        embedding: number[]
+    ) {
+        try {
+            await this.es.index({
+            index: indexEmbedd,
+                document: {
+                    company_id: companyId,
+                    text,
+                    locale: 'ru',
+                    embedding,
+                },
+            });
+
+        } catch (error) {
+            throw error
+        }
+    }
+
+
+    async searchByCompany(
+        companyId: string, 
+        queryEmbedding: number[]
+    ) {
+        try {
+            const result = await this.es.search({
+                index: indexEmbedd,
+                knn: {
+                field: 'embedding',
+                query_vector: queryEmbedding,
+                k: 3,
+                num_candidates: 20,
+                filter: {
+                    term: { company_id: companyId },
+                },
+            },
+        });
+
+        return result.hits.hits.map((hit) => hit._source.text).join('\n');
+        } catch (error) {
+            throw error
+        }
+  }
 }

@@ -66,15 +66,15 @@ export class ElasticModule {
                     body: {
                         mappings: {
                         properties: {
-                            bank_id: { type: 'keyword' },         
+                            company_id: { type: 'keyword' },         
                             text: { type: 'text' },                
                             locale: { type: 'keyword' },           
                             timestamp: { type: 'date' },       
                             embedding: {
-                            type: 'dense_vector',
-                            dims: 768,                      
-                            index: true,             
-                            similarity: 'cosine'        
+                                type: 'dense_vector',
+                                dims: 768,                      
+                                index: true,             
+                                similarity: 'cosine'        
                             }
                         }
                        }
