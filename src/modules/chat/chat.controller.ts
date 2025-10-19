@@ -12,9 +12,15 @@ export class ChatController {
   async ask(
     @Body() dto: ChatDto
   ) {
+    console.log(`[START] ChatController method ask dto: ${JSON.stringify(dto)}`);
     try {
       const answer = await this.ragService.ask(dto);
-      return { answer };
+      
+      return { 
+        status: 200,
+        success: true,
+        data: answer 
+      };
       
     } catch (error) {
        throw error

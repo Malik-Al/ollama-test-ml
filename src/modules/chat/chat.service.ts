@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ElasticService } from '../elastic/elastic.service';
-import ollama from 'ollama';
-import { settingPrompt, dataForQuestion } from './setting,prompt';
+import ollama, { ChatResponse } from 'ollama';
+import { settingPrompt } from './setting,prompt';
 import { ChatDto } from './dto';
 import { EmbeddingService } from '../embedding/embedding.service';
 const chatModelMistral = 'mistral';
-const chatModelDeepseek = 'deepseek-r1';
 
 
 
@@ -17,7 +16,27 @@ export class ChatService {
     private readonly embedding: EmbeddingService
   ) {}
 
-    async ask(dto: ChatDto) {
+  private async streamResponse(response: AsyncIterable<ChatResponse>): Promise<string> {
+    let fullResponse = '';
+    try {
+    for await (const part of response) {
+      const text = part?.message?.content 
+      if (text) {
+        process.stdout.write(text);
+        fullResponse += text;
+      }
+    }
+
+    } catch (err) {
+      console.error('Stream error:', err);
+    } 
+     console.log('[STREAM FINISHED]');
+     return fullResponse;
+  }
+
+    
+    async ask(dto: ChatDto): Promise<string> {
+      console.log(`[START] ChatService method ask dto: ${JSON.stringify(dto)}`);
       try {
         const {
           bank_id, 
@@ -26,10 +45,10 @@ export class ChatService {
         } = dto;
 
         const queryEmbedding = await this.embedding.embedQuestion(question);
-        const context = await this.elastic.searchByCompany(company_id, queryEmbedding);
-
-        console.log('context', context);
         console.log('queryEmbedding', queryEmbedding);
+
+        const context = await this.elastic.searchByCompany(company_id, queryEmbedding);
+        console.log('context', context);
 
         const bankId = await this.elastic.getChatContext(bank_id);
 
@@ -39,34 +58,43 @@ export class ChatService {
 
         if(bankId[0]){
           msg.push(...bankId[0]._source.messages)
-          msg.push({ role: 'user', content: `Вот данные: ${context}, Вопрос: ${question}` })
+          msg.push({ role: 'user', content: `Вот данные:  <context> ${context} </context>, Вопрос: <question> ${question} </question>` })
         } else {
-          msg.push({ role: 'user', content: `Вот данные: ${context}, Вопрос: ${question}`  })
+          msg.push({ role: 'user', content: `Вот данные:  <context> ${context} </context>, Вопрос: <question> ${question} </question>` })
         }
     
         console.log('msg', msg);
 
-          const response: any = await ollama.chat({
+          const response = await ollama.chat({
             model: chatModelMistral, 
             stream: true,
             messages: msg
           });
 
+          const message = await this.streamResponse(response)
           
-          for await (const part of response) {
-            process.stdout.write(part.message?.content || '');
-          }
           
-          console.log('msg', response);
+          console.log('msg', message);
 
-        // return response.message.content
-        // const stream = await ollama.chat({
-        //   model: chatModelMistral,
-        //   messages: [
-        //     { role: 'system', content: 'Ты помощник, который отвечает на вопросы о банке.' },
-        //     { role: 'user', content: `Контекст:\n${context}\n\nВопрос: ${question}` },
-        //   ],
-        // });
+          if(!bankId[0]){
+            console.log('new user added data for');
+            await this.elastic.saveChat(
+              bank_id,
+              [
+                { role: 'user', content: question },
+                { role: 'assistant', content: message }
+              ]
+            );
+          }
+
+        if(bankId[0]) {
+          console.log('existing user added data');
+          await this.elastic.addMessages(bankId[0]._id, { role: 'user', content: question })
+          await this.elastic.addMessages(bankId[0]._id, { role: 'assistant', content: message })
+          await this.elastic.trimMessages(bankId[0]._source.bank_id);
+        }
+
+        return message
         
       } catch (error) {
         console.error(`[EEROR] ChatService method ask error: `, error);
