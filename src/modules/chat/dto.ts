@@ -6,4 +6,7 @@ export class ChatDto {
 
     @IsNumberString({}, { message: 'bank_id must contain only numbers.' })
     bank_id: string;
+
+    @IsString()
+    company_id: string
 }
