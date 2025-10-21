@@ -45,10 +45,8 @@ export class ChatService {
         } = dto;
 
         const queryEmbedding = await this.embedding.embedQuestion(question);
-        console.log('queryEmbedding', queryEmbedding);
 
         const context = await this.elastic.searchByCompany(company_id, queryEmbedding);
-        console.log('context', context);
 
         const bankId = await this.elastic.getChatContext(bank_id);
 
@@ -63,19 +61,17 @@ export class ChatService {
           msg.push({ role: 'user', content: `Вот данные:  <context> ${context} </context>, Вопрос: <question> ${question} </question>` })
         }
     
-        console.log('msg', msg);
+          console.log('msg', msg);
 
-          const response = await ollama.chat({
+          const response: any = await ollama.chat({
             model: chatModelMistral, 
-            stream: true,
             messages: msg
           });
 
-          const message = await this.streamResponse(response)
+          const message = response.message?.content
 
-          
-          
-          console.log('msg', message);
+
+          console.log('msg', response);
 
           if(!bankId[0]){
             console.log('new user added data for');
@@ -88,77 +84,32 @@ export class ChatService {
             );
           }
 
-        if(bankId[0]) {
-          console.log('existing user added data');
-          await this.elastic.addMessages(bankId[0]._id, { role: 'user', content: question })
-          await this.elastic.addMessages(bankId[0]._id, { role: 'assistant', content: message })
-          await this.elastic.trimMessages(bankId[0]._source.bank_id);
-        }
+          if(bankId[0]) {
+            console.log('existing user added data');
+            await this.elastic.addMessages(bankId[0]._id, { role: 'user', content: question })
+            await this.elastic.addMessages(bankId[0]._id, { role: 'assistant', content: message })
+            await this.elastic.trimMessages(bankId[0]._source.bank_id);
+          }
 
-        return message.trim()
+          return response?.message?.content
 
-        
-      } catch (error) {
-        console.error(`[EEROR] ChatService method ask error: `, error);
-        throw error
+          // if (!response?.itr || typeof response.itr[Symbol.asyncIterator] !== 'function') {
+          //   throw new Error('Ollama response is not async iterable');
+          // }
+
+          // // ✅ Итерируем по потоку
+          // for await (const chunk of response) {
+          //   console.log('chunk', chunk);
+            
+          //   if (chunk?.message?.content) {
+          //     yield chunk.message.content;
+          //   }
+          // }
+          
+          } catch (error) {
+            console.error(`[EEROR] ChatService method ask error: `, error);
+            throw error
+          }
+
       }
-
-  }
-
-  // async ask(
-  //   dto: ChatDto, 
-  // ) {
-  //   try {
-  //     const {
-  //       bank_id, 
-  //       question
-  //     } = dto;
-
-      
-  //     const bankId = await this.elastic.getChatContext(bank_id);
-      
-  //     const msg = [
-  //         { role: 'system', content: `Ты ассистент в банке: ${settingPrompt}`}
-  //     ]
-
-  //     if(bankId[0]){
-  //         msg.push(...bankId[0]._source.messages)
-  //         msg.push({ role: 'user', content: `Вот данные: ${dataForQuestion}, Вопрос: ${question}` })
-  //     } else {
-  //       msg.push({ role: 'user', content: `Вот данные: ${dataForQuestion}, Вопрос: ${question}`  })
-  //     }
-
-  //     console.log('msg', msg);
-
-  
-  //     const response: any = await ollama.chat({
-  //       model: chatModelMistral, 
-  //       messages: msg
-  //     });
-
-      
-  //     if(!bankId[0]){
-  //       console.log('new user added data for');
-  //       await this.elastic.saveChat(
-  //         bank_id,
-  //         [
-  //           { role: 'user', content: question },
-  //           { role: 'assistant', content: response.message.content }
-  //         ]
-  //       );
-  //     }
-
-  //     if(bankId[0]) {
-  //       console.log('existing user added data');
-  //       await this.elastic.addMessages(bankId[0]._id, { role: 'user', content: question })
-  //       await this.elastic.addMessages(bankId[0]._id, response.message)
-  //       await this.elastic.trimMessages(bankId[0]._source.bank_id);
-  //     }
-
-  //     return response.message.content
-      
-  //   } catch (error) {
-  //       throw error
-  //   }
-  // }
 }
