@@ -14,57 +14,26 @@ export class UploadService {
 
   private chunkText(
     text: string, 
-    chunkSize = 500,
-    overlap = 50
+    maxWords = 80, 
+    overlap = 10 
   ): string[] {
     try {
-      // const paragraphs = text.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
+        const words = text.split(/\s+/);
+        const chunks: string[] = [];
 
-      // const chunks: string[] = [];
-      // let currentChunk = '';
-
-      // for (const paragraph of paragraphs) {
-      //   const sentences = paragraph.match(/[^.!?]+[.!?]?/g) || [paragraph];
-
-      //   for (const sentence of sentences) {
-      //     if ((currentChunk + ' ' + sentence).length > chunkSize) {
-      //       if (currentChunk) chunks.push(currentChunk.trim());
-      //       currentChunk = sentence.slice(-overlap);
-      //     } else {
-      //       currentChunk += (currentChunk ? ' ' : '') + sentence;
-      //     }
-      //   }
-      // }
-      // if (currentChunk) chunks.push(currentChunk.trim());
-      // return chunks;
-
-      const sentences = text.match(/[^.!?]+[.!?]?/g) || [text];
-
-      const chunks: string[] = [];
-      let currentChunk = '';
-
-      for (const sentence of sentences) {
-        if ((currentChunk + ' ' + sentence).trim().length > chunkSize) {
-          chunks.push(currentChunk.trim());
-
-          const overlapText = currentChunk.slice(-overlap);
-          currentChunk = overlapText + ' ' + sentence;
-        } else {
-          currentChunk += (currentChunk ? ' ' : '') + sentence;
+        for (let i = 0; i < words.length; i += maxWords - overlap) {
+          const chunk = words.slice(i, i + maxWords).join(' ');
+          chunks.push(chunk);
         }
-      }
 
-      if (currentChunk.trim().length > 0) {
-        chunks.push(currentChunk.trim());
-      }
-
-      return chunks;
+        return chunks;
       
     } catch (error) {
         console.error(`[EEROR] UploadService method chunkText error: `, error);
         throw error
     }
   }
+
 
   async added(
     file: FileType
@@ -81,6 +50,8 @@ export class UploadService {
       const companyId = uuidv4();
       
        for (const chunk of chunks) {
+          console.log('chunk', chunk);
+        
           const embedding = await this.embedding.embedTexts(chunk);
           await this.elastic.saveEmbedding(
             companyId, 

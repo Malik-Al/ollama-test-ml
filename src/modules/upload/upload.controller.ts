@@ -19,11 +19,14 @@ export class UploadController {
   ){
     console.log(`[START] UploadController method uploadFile`, file.fieldname);
     try {
-      await this.upload.added(file);
+      const response = await this.upload.added(file);
 
       return {
         code: 200,
-        success: true
+        success: true,
+        data: {
+          company_id: response
+        }
       }
     } catch (error) {
       console.error(`[EEROR] UploadController method uploadFile error: `, error);

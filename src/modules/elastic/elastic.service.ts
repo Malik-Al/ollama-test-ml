@@ -40,7 +40,7 @@ export class ElasticService {
                         }
                     `,
                         params: {
-                            pairs: 5
+                            pairs: 10
                         }
                     }
                 }
@@ -161,7 +161,7 @@ export class ElasticService {
                 knn: {
                     field: 'embedding',
                     query_vector: queryEmbedding,
-                    k: 2,
+                    k: 3,
                     num_candidates: 20,
                 // filter: {
                 //     term: { company_id: companyId },
