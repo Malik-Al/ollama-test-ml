@@ -7,7 +7,6 @@ import { EmbeddingService } from '../embedding/embedding.service';
 const chatModelMistral = 'mistral';
 
 
-
 @Injectable()
 export class ChatService {
   chatMsg: any[] = [];
