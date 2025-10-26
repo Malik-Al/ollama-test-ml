@@ -24,8 +24,8 @@ export class TelegramService implements OnModuleInit {
       const userId = msg.from?.id; 
       const text = msg.text?.trim();
 
-    const firstName = msg.from?.first_name || '';
-    const username = msg.from?.username || '';
+      // const firstName = msg.from?.first_name || '';
+      // const username = msg.from?.username || '';
 
       if (!text) return;
 
@@ -47,24 +47,25 @@ export class TelegramService implements OnModuleInit {
           this.bot.sendChatAction(chatId, 'typing');
         }, 2000);
 
-        const result = translate(question, { to: 'ru' });
-        const {raw, text} = (await result)
+        // const result = translate(question, { to: 'ru' });
+        // const {raw, text} = (await result)
 
-        const answerLang = raw.src;
+        // const answerLang = raw.src;
 
-        console.log('Translated text:', text);
-        console.log('src', answerLang);
+        // console.log('Translated text:', text);
+        // console.log('src', answerLang);
+        console.log('question', question);
 
-        let message = await this.chatService.ask({ question: text, bank_id: String(userId), company_id: 'cf2b4bfb-382a-4702-b489-e8dda8cacc7b'})
+        let message = await this.chatService.ask({ question: question, bank_id: String(userId), company_id: 'cf2b4bfb-382a-4702-b489-e8dda8cacc7b'})
 
-        const resultMessage = translate(message, { to: answerLang });
+        // const resultMessage = translate(message, { to: answerLang });
 
-        const answer = (await resultMessage).text
-        console.log('answer', answer);
+        // const answer = (await resultMessage).text
+        console.log('message', message);
         
         clearInterval(interval);
 
-      await this.bot.sendMessage(chatId, answer);
+      await this.bot.sendMessage(chatId, message);
       await this.bot.sendChatAction(chatId, 'cancel');
     } catch (err) {
       console.error('[Telegram Bot Error]', err);

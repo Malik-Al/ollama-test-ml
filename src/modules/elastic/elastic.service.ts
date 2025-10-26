@@ -157,7 +157,7 @@ export class ElasticService {
         try {
             const result = await this.es.search({
                 index: indexEmbedd,
-                min_score: 0.80,
+                min_score: 0.85,
                 knn: {
                     field: 'embedding',
                     query_vector: queryEmbedding,
