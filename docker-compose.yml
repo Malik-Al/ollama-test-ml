@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama_gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_MAX_LOADED_MODELS=10
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: >
+      bash -c "
+        echo 'Starting Ollama server...' &&
+        ollama serve & 
+        sleep 10 &&
+        echo 'Downloading & warming mistral...' &&
+        ollama pull mistral &&
+        ollama run mistral 'Hello' >/dev/null &&
+        echo 'Downloading & warming nomic-embed-text...' &&
+        ollama pull nomic-embed-text &&
+        tail -f /dev/null
+      "
+
+volumes:
+  ollama_data:
