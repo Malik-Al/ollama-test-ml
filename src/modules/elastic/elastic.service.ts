@@ -157,12 +157,12 @@ export class ElasticService {
         try {
             const result = await this.es.search({
                 index: indexEmbedd,
-                min_score: 0.80,
+                min_score: 0.50,
                 knn: {
                     field: 'embedding',
                     query_vector: queryEmbedding,
-                    k: 3,
-                    num_candidates: 20,
+                    k: 5,
+                    num_candidates: 50,
                 // filter: {
                 //     term: { company_id: companyId },
                 // },

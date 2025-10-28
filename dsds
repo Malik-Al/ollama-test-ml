@@ -1,0 +1,203 @@
+[33mcommit 0edb4781d8948b1c25a8c6bc7363731d18620762[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmy-fix-branch[m[33m)[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Tue Oct 28 23:14:41 2025 +0600
+
+    [Upd]
+
+[33mcommit e72358e3edf5ee7ee3ba94532d6cf8296f493b84[m[33m ([m[1;31morigin/my-fix-branch[m[33m)[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 26 22:32:11 2025 +0600
+
+    [Upd]
+
+[33mcommit f0273a9ab9a55c64ba2daeb58822ef8d1ad4d65e[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 26 22:31:51 2025 +0600
+
+    [Upd] for started ollama and models
+
+[33mcommit 9db30a6117e5e2cf77138e9d14bb7349a1ed5504[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 26 22:31:02 2025 +0600
+
+    [Upd]
+
+[33mcommit d95998a4aa408c925a53bdffb37ac0f94bb2ca40[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Wed Oct 22 23:27:00 2025 +0600
+
+    [Upd] use translate
+
+[33mcommit 3dd0706cef9a23ae39b810cda17187be9b4a7fe8[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Wed Oct 22 00:49:23 2025 +0600
+
+    [Upd] install pack and use module
+
+[33mcommit b003e0f851e40746de472f026ebf347da4de74a5[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Wed Oct 22 00:48:57 2025 +0600
+
+    [Upd] use bot
+
+[33mcommit 0e240e1121e0bafa2ae8a334005c4ec56f2b3d4a[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Wed Oct 22 00:48:32 2025 +0600
+
+    [Upd] telegram bot
+
+[33mcommit a74f5ac2149977d7f22e6539a27a4dbf873c5a29[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 22:42:14 2025 +0600
+
+    [Upd]
+
+[33mcommit eff8358b1deef13d4da1dacd03f62d40730f75c7[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 20:42:15 2025 +0600
+
+    [Upd] log
+
+[33mcommit a29872ca5f143cb0d06f438d7182c3125c9ba72c[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 20:42:00 2025 +0600
+
+    [Upd] added history chat and type
+
+[33mcommit d57445b9523d15f8f04bad49a9ac90e2da868f1d[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 20:41:29 2025 +0600
+
+    [Upd]
+
+[33mcommit 80475fcf2ce6fbbd4802b9db15d2ac2db6647011[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 20:41:07 2025 +0600
+
+    [Upd] type and logic write
+
+[33mcommit 37129d9ac68d7569d388d14a23165437982ce0a7[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 16:40:06 2025 +0600
+
+    [Upd] install
+
+[33mcommit c541c64dbdc3e8bd54d686e7fd2cbd734055cbe7[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 16:39:54 2025 +0600
+
+    [Upd]
+
+[33mcommit 0753f8aeb3cd0d3b0a89ced6485a29f6bfb15b8c[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 16:39:35 2025 +0600
+
+    [Upd] new base method wokr chat
+
+[33mcommit 3a26d88f807e449c9b46f37d3e5006c4ab69e5a2[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 16:39:02 2025 +0600
+
+    [Upd] write text from pdf by chunk
+
+[33mcommit 79388ce50b7b810ba6b7f00611ccfb2bce1e3d0b[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 16:38:14 2025 +0600
+
+    [Upd] for added and write embeding
+
+[33mcommit 840295899cbd930d475ab9e4e31a7aa784bf4623[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 00:07:28 2025 +0600
+
+    [Upd] base
+
+[33mcommit dcaaaefafaffc62cbf035a2f9feab08c4d155db9[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 00:06:22 2025 +0600
+
+    [Upd]
+
+[33mcommit cc4ffc93642581e1e579d73027958aa5eb0d3f81[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 00:05:53 2025 +0600
+
+    [Upd]
+
+[33mcommit 916c904568a8fa2fd637a82304db852f7765baeb[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Oct 19 00:05:31 2025 +0600
+
+    [Add] base for upload pdf
+
+[33mcommit e148752b4b7eea996d557e9792b31e8bc3141c97[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Mon Oct 13 22:28:46 2025 +0600
+
+    [Upd] delete last message 2
+
+[33mcommit 2bd3ff25a0e534367059a90ce9ecc7f66fccb5a4[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Mon Oct 13 21:53:21 2025 +0600
+
+    [Upd]
+
+[33mcommit 4428cbdb8d7e476d73a087ffc97cfd50130bbd4d[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Mon Oct 13 21:43:59 2025 +0600
+
+    [Added] context message users
+
+[33mcommit b037875d457e3119783e91aa2aa6811c7c32aee9[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Mon Oct 13 00:59:48 2025 +0600
+
+    [Upd] conteext talk
+
+[33mcommit c1d0627497c87be8015b95b1d696e59d6a3df1fa[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Thu Oct 9 00:29:55 2025 +0600
+
+    [Upd] jobs prompt
+
+[33mcommit 7e5cbd49615010dbc3a6e9922c76595929ae4fe4[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Mon Sep 8 22:47:26 2025 +0600
+
+    [Upd] split shared chat and elastic
+
+[33mcommit 71b33d33134fbf9782a8c2dcefeadc3e77f7066a[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Sep 7 19:14:38 2025 +0600
+
+    [Upd] markdown
+
+[33mcommit 42b246d429b5554f572eccb1b79074dec7667ea0[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Sep 7 19:13:44 2025 +0600
+
+    [Upd] markdown
+
+[33mcommit 2e7de56494af711eaa17c5a376304b4e19ce70fa[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Sep 7 19:08:59 2025 +0600
+
+    [Upd]
+
+[33mcommit 666583b37c619f87aaf162b5a70fa3779307d441[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Sep 7 18:55:19 2025 +0600
+
+    added chat for users
+
+[33mcommit 3b81da67cca4011feafa28ee66ab5879ddbdbc45[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Sep 7 18:41:31 2025 +0600
+
+    base for chat and embeddings
+
+[33mcommit ebc54bde1d7e303387eb91833d34c8fc544c7275[m
+Author: unknown <malikimenov@gmail.com>
+Date:   Sun Sep 7 13:41:44 2025 +0600
+
+    first commit
